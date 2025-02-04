@@ -1,0 +1,317 @@
+(* Lab 2 sandbox *)
+
+!terminal -> T, F
+
+--- NOT(T) -> F
+--- NOT(F) -> T
+
+!try NOT(T) = F
+!try NOT(F) = T
+
+--- AND(T, T) -> T
+--- AND(_, _) -> F
+
+!try AND(T, T) = T
+!try AND(T, F) = F
+!try AND(F, T) = F
+!try AND(F, F) = F
+
+--- OR(F, F) -> F
+--- OR(_, _) -> T
+
+!try OR(T, T) = T
+!try OR(T, F) = T
+!try OR(F, T) = T
+!try OR(F, F) = F
+
+--- NAND(T, T) -> F
+--- NAND(_, _) -> T
+
+!try NAND(T, T) = F
+!try NAND(T, F) = T
+!try NAND(F, T) = T
+!try NAND(F, F) = T
+
+--- NOR(F, F) -> T
+--- NOR(_, _) -> F
+
+!try NOR(T, T) = F
+!try NOR(T, F) = F
+!try NOR(F, T) = F
+!try NOR(F, F) = T
+
+--- XOR(T, T) -> F
+--- XOR(T, F) -> T
+--- XOR(F, T) -> T
+--- XOR(F, F) -> F
+
+!try XOR(T, T) = F
+!try XOR(T, F) = T
+!try XOR(F, T) = T
+!try XOR(F, F) = F
+
+(* ==================================== ARITHMETIC ==================================== *)
+
+!terminal -> bead, zero, divideByZeroError, pair
+
+(* ----------------- addition ----------------- *)
+--- add(zero, _X) -> _X
+--- add(_X, zero) -> _X
+--- add(_X, bead(_Y)) -> add(bead(_X), _Y)
+
+!try add(zero,zero) = zero 
+!try add(bead(bead(bead(bead(zero)))), zero) = bead(bead(bead(bead(zero))))
+!try add(bead(bead(bead(bead(zero)))), bead(bead(zero))) = bead(bead(bead(bead(bead(bead(zero))))))
+!try add(bead(zero), bead(bead(zero))) = bead(bead(bead(zero)))
+
+
+
+
+(* ----------------- subtraction ----------------- *)
+--- sub(_X, zero) -> _X
+--- sub(zero, _X) -> zero
+--- sub(bead(_X), bead(_Y)) -> sub(_X, _Y)
+
+!try sub(bead(bead(bead(bead(zero)))), bead(bead(zero))) = bead(bead(zero))
+!try sub(bead(bead(zero)), bead(bead(zero))) = zero
+!try sub(bead(bead(zero)), zero) = bead(bead(zero))
+
+
+
+
+(* ----------------- multiplication ----------------- *)
+--- mul(_X, zero) -> zero
+--- mul(zero, _Y) -> zero
+
+--- mul_helper(_X, bead(zero), _A, zero) -> _A
+--- mul_helper(_X, bead(_Y), _A, zero) -> mul_helper(_X, _Y, _A, _X)
+--- mul_helper(_X, _Y, _A, bead(_C)) -> mul_helper(_X, _Y, bead(_A), _C)
+
+--- mul(_X, _Y) -> mul_helper(_X, _Y, zero, _X)
+
+!try mul(zero, bead(bead(zero))) = zero
+!try mul(bead(bead(zero)), zero) = zero
+!try mul(bead(zero), bead(bead(zero))) = bead(bead(zero))
+!try mul(bead(bead(zero)), bead(zero)) = bead(bead(zero))
+!try mul(bead(bead(zero)), bead(bead(bead(zero)))) = bead(bead(bead(bead(bead(bead(zero))))))
+!try mul(bead(bead(bead(zero))), bead(bead(bead(zero)))) = bead(bead(bead(bead(bead(bead(bead(bead(bead(zero)))))))))
+
+
+
+
+(* ----------------- division ----------------- *)
+--- div(_X, bead(zero)) -> _X
+--- div(_X, zero) -> divideByZeroError
+
+--- div_helper(zero, _Y, _Q, zero) -> bead(_Q)
+--- div_helper(zero, _Y, _Q, _C) -> _Q
+--- div_helper(_X, _Y, _Q, zero) -> div_helper(_X, _Y, bead(_Q), _Y)
+--- div_helper(bead(_X), _Y, _Q, bead(_C)) -> div_helper(_X, _Y, _Q, _C)
+
+--- div(_X, _Y) -> div_helper(_X, _Y, zero, _Y)
+
+!try div(bead(bead(bead(bead(zero)))), bead(bead(zero))) = bead(bead(zero))
+!try div(bead(bead(bead(bead(bead(bead(zero)))))), bead(bead(zero))) = bead(bead(bead(zero)))
+!try div(bead(bead(zero)), bead(bead(bead(zero)))) = zero
+!try div(bead(zero), bead(bead(zero))) = zero
+!try div(bead(bead(zero)), zero) = divideByZeroError
+
+
+(* ================================== WORKING WITH NEGATIVES ================================== *)
+
+(* ----------------- addition ----------------- *)
+--- add(pair(_P, _Q), pair(zero, zero)) -> pair(_P, _Q)
+--- add(pair(_P, _Q), pair(zero, bead(_Y))) -> add(pair(_P, bead(_Q)), pair(zero, _Y))
+--- add(pair(_P, _Q), pair(bead(_X), zero)) -> add(pair(bead(_P), _Q), pair(_X, zero))
+--- add(pair(_P, _Q), pair(bead(_X), bead(_Y))) -> add(pair(bead(_P), bead(_Q)), pair(_X, _Y))
+
+// (2 - 1) + (0 - 0) = (2 - 1)
+!try add(pair(bead(bead(zero)), bead(zero)), pair(zero, zero)) = pair(bead(bead(zero)), bead(zero))
+
+// (0 - 0) + (2 - 1) = (2 - 1)
+!try add(pair(zero, zero), pair(bead(bead(zero)), bead(zero))) = pair(bead(bead(zero)), bead(zero))
+
+// (0 - 2) + (0 - 1) = (0 - 3)
+!try add(pair(zero, bead(bead(zero))), pair(zero, bead(zero))) = pair(zero, bead(bead(bead(zero))))
+
+// (2 - 1) + (1 - 0) = (3 - 1)
+!try add(pair(bead(bead(zero)), bead(zero)), pair(bead(zero), zero)) = pair(bead(bead(bead(zero))), bead(zero))
+
+// (2 - 1) + (0 - 1) = (2 - 2)
+!try add(pair(bead(bead(zero)), bead(zero)), pair(zero, bead(zero))) = pair(bead(bead(zero)), bead(bead(zero)))
+
+
+
+
+(* ----------------- subtraction ----------------- *)
+--- sub(pair(bead(_P), bead(_Q)), pair(zero, zero)) -> sub(pair(_P, _Q), pair(zero, zero)) // reducing the first pair to zero
+--- sub(pair(zero, zero), pair(bead(_X), bead(_Y))) -> sub(pair(_Y, _X), pair(zero, zero)) // reducing the second pair to zero
+
+--- sub(pair(zero, _Q), pair(_X, zero)) -> add(pair(zero, _Q), pair(zero, _X)) // base case for sub
+--- sub(pair(_P, zero), pair(zero, _Y)) -> add(pair(_P, zero), pair(_Y, zero)) // base case for sub
+
+--- sub(pair(zero, bead(_Q)), pair(_X, bead(_Y))) -> sub(pair(zero, _Q), pair(_X, _Y))
+--- sub(pair(bead(_P), zero), pair(bead(_X), _Y)) -> sub(pair(_P, zero), pair(_X, _Y))
+
+--- sub(pair(bead(_P), _Q), pair(bead(_X), zero)) -> sub(pair(_P, _Q), pair(_X, zero))
+--- sub(pair(_P, bead(_Q)), pair(zero, bead(_Y))) -> sub(pair(_P, _Q), pair(zero, _Y))
+
+--- sub(pair(bead(_P), bead(_Q)), pair(bead(_X), bead(_Y))) -> sub(pair(_P, _Q), pair(_X, _Y))
+
+// (0 - 0) - (0 - 0) = (0 - 0) 
+!try sub(pair(zero, zero), pair(zero, zero)) = pair(zero, zero)
+
+// (2 - 1) - (0 - 0) = (2 - 1) = (1 - 0)
+!try sub(pair(bead(bead(zero)), bead(zero)), pair(zero, zero)) = pair(bead(zero), zero)
+
+// (0 - 0) - (1 - 2) = (2 - 1) = (1 - 0)
+!try sub(pair(zero, zero), pair(bead(zero), bead(bead(zero)))) = pair(bead(zero), zero)
+
+// (0 - 2) - (1 - 0) = (0 - 3)
+!try sub(pair(zero, bead(bead(zero))), pair(bead(zero), zero)) = pair(zero, bead(bead(bead(zero))))
+
+// (1 - 0) - (0 - 2) = (3, 0)
+!try sub(pair(bead(zero), zero), pair(zero, bead(bead(zero)))) = pair(bead(bead(bead(zero))), zero)
+
+// (2 - 0) - (1 - 0) = (1 - 0)
+!try sub(pair(bead(bead(zero)), zero), pair(bead(zero), zero)) = pair(bead(zero), zero)
+
+// (2 - 0) - (1 - 1) = (2 - 0)
+!try sub(pair(bead(bead(zero)), zero), pair(bead(zero), bead(zero))) = pair(bead(bead(zero)), zero)
+
+// (0 - 2) - (0 - 1) = (0 - 1)
+!try sub(pair(zero, bead(bead(zero))), pair(zero, bead(zero))) = pair(zero, bead(zero))
+
+// (0 - 2) - (1 - 1) = (0 - 2)
+!try sub(pair(zero, bead(bead(zero))), pair(bead(zero), bead(zero))) = pair(zero, bead(bead(zero)))
+
+// (2 - 1) - (1 - 0) = (1 - 1)
+!try sub(pair(bead(bead(zero)), bead(zero)), pair(bead(zero), zero)) = pair(zero, zero)
+
+// (2 - 1) - (0 - 1) = (2, 0)
+!try sub(pair(bead(bead(zero)), bead(zero)), pair(zero, bead(zero))) = pair(bead(bead(zero)), zero)
+
+// (2 - 1) - (3 - 1) = (0 - 1)
+!try sub(pair(bead(bead(zero)), bead(zero)), pair(bead(bead(bead(zero))), bead(zero))) = pair(zero, bead(zero))
+
+// (1 - 2) - (3 - 5) = (4, 0)
+// (0 - 1) - (2 - 4) 
+// (0 - 0) - (2 - 3)
+// (3 - 2)
+// (1 - 0)
+!try sub(pair(bead(zero), bead(bead(zero))), pair(bead(bead(bead(zero))), bead(bead(bead(bead(bead(zero))))))) = pair(bead(zero), zero)
+
+// (2 - 1) - (1 - 3) = (3 - 0)
+!try sub(pair(bead(bead(zero)), bead(zero)), pair(bead(zero), bead(bead(bead(zero))))) = pair(bead(bead(bead(zero))), zero)
+
+// (2 - 1) - (3 - 1) = (0 - 1)
+!try sub(pair(bead(bead(zero)), bead(zero)), pair(bead(bead(bead(zero))), bead(zero))) = pair(zero, bead(zero))
+
+
+
+
+(* ----------------- multiplication ----------------- *)
+--- mul_pair(pair(_P, _Q), pair(zero, zero)) -> pair(zero, zero)
+--- mul_pair(pair(zero, zero), pair(_P, _Q)) -> pair(zero, zero)
+
+--- mul_h_plus(_X, bead(zero), _A, zero) -> pair(_A, zero)
+--- mul_h_plus(_X, bead(_Y), _A, zero) -> mul_h_plus(_X, _Y, _A, _X)
+--- mul_h_plus(_X, _Y, _A, bead(_C)) -> mul_h_plus(_X, _Y, bead(_A), _C)
+
+--- mul_h_minus(_X, bead(zero), _A, zero) -> pair(zero, _A)
+--- mul_h_minus(_X, bead(_Y), _A, zero) -> mul_h_minus(_X, _Y, _A, _X)
+--- mul_h_minus(_X, _Y, _A, bead(_C)) -> mul_h_minus(_X, _Y, bead(_A), _C)
+
+--- mul_pair(pair(_P, zero), pair(_X, zero)) -> mul_h_plus(_P, _X, zero, _P)
+--- mul_pair(pair(zero, _Q), pair(zero, _Y)) -> mul_h_plus(_Q, _Y, zero, _Q)
+
+--- mul_pair(pair(_P, zero), pair(zero, _Y)) -> mul_h_minus(_P, _Y, zero, _P)
+--- mul_pair(pair(zero, _Q), pair(_X, zero)) -> mul_h_minus(_Q, _X, zero, _Q)
+
+// reduction
+--- mul_pair(pair(zero, _Q), pair(bead(_X), bead(_Y))) -> mul_pair(pair(zero, _Q), pair(_X, _Y))
+--- mul_pair(pair(_P, zero), pair(bead(_X), bead(_Y))) -> mul_pair(pair(_P, zero), pair(_X, _Y))
+--- mul_pair(pair(bead(_P), bead(_Q)), pair(zero, _Y)) -> mul_pair(pair(_P, _Q), pair(zero, _Y))
+--- mul_pair(pair(bead(_P), bead(_Q)), pair(_X, zero)) -> mul_pair(pair(_P, _Q), pair(_X, zero))
+
+--- mul_pair(pair(bead(_P), bead(_Q)), pair(bead(_X), bead(_Y))) -> mul_pair(pair(_P, _Q), pair(_X, _Y))
+
+// (3 - 1) * (2 - 1) = (2 - 0)
+!try mul_pair(pair(bead(bead(bead(zero))), bead(zero)), pair(bead(bead(zero)), bead(zero))) = pair(bead(bead(zero)), zero)
+
+// (5 - 0) * (3 - 2) = (5 - 0)
+!try mul_pair(pair(bead(bead(bead(bead(bead(zero))))), zero), pair(bead(bead(bead(zero))), bead(bead(zero)))) = pair(bead(bead(bead(bead(bead(zero))))), zero)
+
+// (1 - 2) * (0 - 3) = (3 - 0)
+!try mul_pair(pair(bead(zero), bead(bead(zero))), pair(zero, bead(bead(bead(zero))))) = pair(bead(bead(bead(zero))), zero)
+
+// (1 - 2) * (3 - 0) = (0 - 3)
+!try mul_pair(pair(bead(zero), bead(bead(zero))), pair(bead(bead(bead(zero))), zero)) = pair(zero, bead(bead(bead(zero))))
+
+// (2 - 1) * (1 - 2) = (0 - 1)
+!try mul_pair(pair(bead(bead(zero)), bead(zero)), pair(bead(zero), bead(bead(zero)))) = pair(zero, bead(zero))
+
+// (3 - 0) * (2 - 0) = (6 - 0)
+!try mul_pair(pair(bead(bead(bead(zero))), zero), pair(bead(bead(zero)), zero)) = pair(bead(bead(bead(bead(bead(bead(zero)))))), zero)
+
+
+
+(* ----------------- division ----------------- *)
+--- div_pair(pair(_P, _Q), pair(bead(zero), zero)) -> pair(_P, _Q)
+--- div_pair(pair(_P, _Q), pair(zero, zero)) -> divideByZeroError
+
+--- div_h_plus(zero, _Y, _Q, zero) -> pair(bead(_Q), zero)
+--- div_h_plus(zero, _Y, _Q, _C) -> pair(_Q, zero)
+--- div_h_plus(_X, _Y, _Q, zero) -> div_h_plus(_X, _Y, bead(_Q), _Y)
+--- div_h_plus(bead(_X), _Y, _Q, bead(_C)) -> div_h_plus(_X, _Y, _Q, _C)
+
+--- div_h_minus(zero, _Y, _Q, zero) -> pair(zero, bead(_Q))
+--- div_h_minus(zero, _Y, _Q, _C) -> pair(zero, _Q)
+--- div_h_minus(_X, _Y, _Q, zero) -> div_h_minus(_X, _Y, bead(_Q), _Y)
+--- div_h_minus(bead(_X), _Y, _Q, bead(_C)) -> div_h_minus(_X, _Y, _Q, _C)
+
+--- div_pair(pair(_P, zero), pair(_X, zero)) -> div_h_plus(_P, _X, zero, _X)
+--- div_pair(pair(zero, _Q), pair(zero, _Y)) -> div_h_plus(_Q, _Y, zero, _Y)
+
+--- div_pair(pair(_P, zero), pair(zero, _Y)) -> div_h_minus(_P, _Y, zero, _Y)
+--- div_pair(pair(zero, _Q), pair(_X, zero)) -> div_h_minus(_Q, _X, zero, _X)
+
+// reduction
+--- div_pair(pair(zero, _Q), pair(bead(_X), bead(_Y))) -> div_pair(pair(zero, _Q), pair(_X, _Y))
+--- div_pair(pair(_P, zero), pair(bead(_X), bead(_Y))) -> div_pair(pair(_P, zero), pair(_X, _Y))
+--- div_pair(pair(bead(_P), bead(_Q)), pair(zero, _Y)) -> div_pair(pair(_P, _Q), pair(zero, _Y))
+--- div_pair(pair(bead(_P), bead(_Q)), pair(_X, zero)) -> div_pair(pair(_P, _Q), pair(_X, zero))
+
+--- div_pair(pair(bead(_P), bead(_Q)), pair(bead(_X), bead(_Y))) -> div_pair(pair(_P, _Q), pair(_X, _Y))
+
+// (3 - 1) / (2 - 1) = (2 - 0)
+!try div_pair(pair(bead(bead(bead(zero))), bead(zero)), pair(bead(bead(zero)), bead(zero))) = pair(bead(bead(zero)), zero)
+
+// (3 - 0) / (3 - 2) = (3 - 0)
+!try div_pair(pair(bead(bead(bead(zero))), zero), pair(bead(bead(bead(zero))), bead(bead(zero)))) = pair(bead(bead(bead(zero))), zero)
+
+// (4 - 0) / (4 - 2) = (2 - 0)
+!try div_pair(pair(bead(bead(bead(bead(zero)))), zero), pair(bead(bead(bead(bead(zero)))), bead(bead(zero)))) = pair(bead(bead(zero)), zero)
+
+// (1 - 2) / (0 - 1) = (1 - 0)
+!try div_pair(pair(bead(zero), bead(bead(zero))), pair(zero, bead(zero))) = pair(bead(zero), zero)
+
+// (3 - 0) / (2 - 0) = (1 - 0)
+!try div_pair(pair(bead(bead(bead(zero))), zero), pair(bead(bead(zero)), zero)) = pair(bead(zero), zero)
+
+// (1 - 0) / (2 - 0) = (0 - 0)
+!try div_pair(pair(bead(zero), zero), pair(bead(bead(zero)), zero)) = pair(zero, zero)
+
+// (0 - 4) / (2 - 0) = (0 - 2)
+!try div_pair(pair(zero, bead(bead(bead(bead(zero))))), pair(bead(bead(zero)), zero)) = pair(zero, bead(bead(zero)))
+
+// (2 - 0) / (0 - 1) = (0 - 2)
+!try div_pair(pair(bead(bead(zero)), zero), pair(zero, bead(zero))) = pair(zero, bead(bead(zero)))
+
+// (3 - 0) / (0 - 2) = (0 - 1)
+!try div_pair(pair(bead(bead(bead(zero))), zero), pair(zero, bead(bead(zero)))) = pair(zero, bead(zero))
+
+// (1 - 0) / (0 - 2) = (0 - 0)
+!try div_pair(pair(bead(zero), zero), pair(zero, bead(bead(zero)))) = pair(zero, zero)
+
+!try div_pair(pair(bead(zero), zero), pair(zero, zero)) = divideByZeroError
