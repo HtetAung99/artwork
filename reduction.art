@@ -120,27 +120,29 @@
 (* ================================== WORKING WITH NEGATIVES ================================== *)
 
 (* ----------------- addition ----------------- *)
+--- add(pair(bead(_P), bead(_Q)), pair(zero, zero)) -> add(pair(_P, _Q), pair(zero, zero)) 
 --- add(pair(_P, _Q), pair(zero, zero)) -> pair(_P, _Q)
 --- add(pair(_P, _Q), pair(zero, bead(_Y))) -> add(pair(_P, bead(_Q)), pair(zero, _Y))
 --- add(pair(_P, _Q), pair(bead(_X), zero)) -> add(pair(bead(_P), _Q), pair(_X, zero))
 --- add(pair(_P, _Q), pair(bead(_X), bead(_Y))) -> add(pair(bead(_P), bead(_Q)), pair(_X, _Y))
 
-// (2 - 1) + (0 - 0) = (2 - 1)
-!try add(pair(bead(bead(zero)), bead(zero)), pair(zero, zero)) = pair(bead(bead(zero)), bead(zero))
+// (2 - 1) + (0 - 0) = (1 - 0)
+!try add(pair(bead(bead(zero)), bead(zero)), pair(zero, zero)) = pair(bead(zero), zero)
 
-// (0 - 0) + (2 - 1) = (2 - 1)
-!try add(pair(zero, zero), pair(bead(bead(zero)), bead(zero))) = pair(bead(bead(zero)), bead(zero))
+// (0 - 0) + (2 - 1) = (1 - 0)
+!try add(pair(zero, zero), pair(bead(bead(zero)), bead(zero))) = pair(bead(zero), zero)
 
 // (0 - 2) + (0 - 1) = (0 - 3)
 !try add(pair(zero, bead(bead(zero))), pair(zero, bead(zero))) = pair(zero, bead(bead(bead(zero))))
 
-// (2 - 1) + (1 - 0) = (3 - 1)
-!try add(pair(bead(bead(zero)), bead(zero)), pair(bead(zero), zero)) = pair(bead(bead(bead(zero))), bead(zero))
+// (2 - 1) + (1 - 0) = (2 - 0)
+!try add(pair(bead(bead(zero)), bead(zero)), pair(bead(zero), zero)) = pair(bead(bead(zero)), zero)
 
-// (2 - 1) + (0 - 1) = (2 - 2)
-!try add(pair(bead(bead(zero)), bead(zero)), pair(zero, bead(zero))) = pair(bead(bead(zero)), bead(bead(zero)))
+// (2 - 1) + (0 - 1) = (0 - 0)
+!try add(pair(bead(bead(zero)), bead(zero)), pair(zero, bead(zero))) = pair(zero, zero)
 
-
+// (0 - 2) + (1 - 0) = (0 - 1)
+!try add(pair(zero, bead(bead(zero))), pair(bead(zero), zero)) = pair(zero, bead(zero))
 
 
 (* ----------------- subtraction ----------------- *)
